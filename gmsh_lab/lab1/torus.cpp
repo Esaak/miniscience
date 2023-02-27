@@ -52,8 +52,8 @@ int main(int argc, char **argv)
 
     // We can constraint the min and max element sizes to stay within reasonnable
     // values (see `t10.cpp' for more details):
-    gmsh::option::setNumber("Mesh.MeshSizeMin", 0.01);
-    gmsh::option::setNumber("Mesh.MeshSizeMax", 0.3);
+    gmsh::option::setNumber("Mesh.MeshSizeMin", 0.001);
+    gmsh::option::setNumber("Mesh.MeshSizeMax", 0.03);
 
     gmsh::model::mesh::generate(3);
     gmsh::write("t19.msh");

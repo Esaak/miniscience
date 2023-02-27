@@ -12,9 +12,9 @@ set(GMSH_LIBRARY gmsh)
 
 # Укажем библиотеки для линковки
 
-add_executable(LAB1 ./lab1/1.cpp)
+add_executable(LAB1 lab1/torus.cpp)
 target_link_libraries(LAB1 ${GMSH_LIBRARY})
 
 
-add_executable(LAB2 ./lab1/2.cpp)
+add_executable(LAB2 lab1/stl.cpp)
 target_link_libraries(LAB2 ${GMSH_LIBRARY})
