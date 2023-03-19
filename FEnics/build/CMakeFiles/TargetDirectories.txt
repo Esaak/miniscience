@@ -1,0 +1,3 @@
+/home/ilya/science_prog_lab/FEnics/build/CMakeFiles/demo_poisson.dir
+/home/ilya/science_prog_lab/FEnics/build/CMakeFiles/edit_cache.dir
+/home/ilya/science_prog_lab/FEnics/build/CMakeFiles/rebuild_cache.dir

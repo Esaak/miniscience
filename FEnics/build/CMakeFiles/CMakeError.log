@@ -1,0 +1,33 @@
+Determining if the PETSC_USE_COMPLEX exist failed with the following output:
+Change Dir: /home/ilya/science_prog_lab/FEnics/build/CMakeFiles/CMakeScratch/TryCompile-JGMsFR
+
+Run Build Command(s):/usr/bin/make -f Makefile cmTC_7d4f8/fast && /usr/bin/make  -f CMakeFiles/cmTC_7d4f8.dir/build.make CMakeFiles/cmTC_7d4f8.dir/build
+make[1]: Entering directory '/home/ilya/science_prog_lab/FEnics/build/CMakeFiles/CMakeScratch/TryCompile-JGMsFR'
+Building C object CMakeFiles/cmTC_7d4f8.dir/CheckSymbolExists.c.o
+/usr/bin/cc  -I/usr/local/petsc/include  -o CMakeFiles/cmTC_7d4f8.dir/CheckSymbolExists.c.o -c /home/ilya/science_prog_lab/FEnics/build/CMakeFiles/CMakeScratch/TryCompile-JGMsFR/CheckSymbolExists.c
+/home/ilya/science_prog_lab/FEnics/build/CMakeFiles/CMakeScratch/TryCompile-JGMsFR/CheckSymbolExists.c: In function ‘main’:
+/home/ilya/science_prog_lab/FEnics/build/CMakeFiles/CMakeScratch/TryCompile-JGMsFR/CheckSymbolExists.c:8:19: error: ‘PETSC_USE_COMPLEX’ undeclared (first use in this function); did you mean ‘PETSC_HAVE_COMPLEX’?
+    8 |   return ((int*)(&PETSC_USE_COMPLEX))[argc];
+      |                   ^~~~~~~~~~~~~~~~~
+      |                   PETSC_HAVE_COMPLEX
+/home/ilya/science_prog_lab/FEnics/build/CMakeFiles/CMakeScratch/TryCompile-JGMsFR/CheckSymbolExists.c:8:19: note: each undeclared identifier is reported only once for each function it appears in
+make[1]: *** [CMakeFiles/cmTC_7d4f8.dir/build.make:78: CMakeFiles/cmTC_7d4f8.dir/CheckSymbolExists.c.o] Error 1
+make[1]: Leaving directory '/home/ilya/science_prog_lab/FEnics/build/CMakeFiles/CMakeScratch/TryCompile-JGMsFR'
+make: *** [Makefile:127: cmTC_7d4f8/fast] Error 2
+
+
+File CheckSymbolExists.c:
+/* */
+#include <petscsystypes.h>
+
+int main(int argc, char** argv)
+{
+  (void)argv;
+#ifndef PETSC_USE_COMPLEX
+  return ((int*)(&PETSC_USE_COMPLEX))[argc];
+#else
+  (void)argc;
+  return 0;
+#endif
+}
+
