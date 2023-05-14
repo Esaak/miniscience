@@ -1,10 +1,10 @@
 from Solver import *
 
 
-dt = 1e-8
-dh = 10
+dt = 1e-7
+dh = 100
 eps = 0.2
-particle_numbers = 10
+particle_numbers = 5000
 R  = 6*1e6
 g = 9.8*0.84
 #Po = 1e6
@@ -14,8 +14,8 @@ coef_reflection = 0.3
 atmosphere_height = 100*1e3
 #x_start = -2*6*1e6
 x_start = -10*atmosphere_height
-y_start = 6*1e6
-N = 100000
+y_start = 6*1e6 + 0.8 * 100*1e3
+N = 100000000
 #dy = (R + atmosphere_height)/particle_numbers
 earth, atmosphere, particles = initialization(particle_numbers=  particle_numbers,
                                               R= R,
@@ -28,4 +28,4 @@ earth, atmosphere, particles = initialization(particle_numbers=  particle_number
                                               y_start = y_start,
                                               dh = dh
                                               )
-movement(earth, atmosphere, particles, N, dt, particle_numbers)
+movement(earth, atmosphere, particles, N, dt)

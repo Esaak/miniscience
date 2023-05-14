@@ -4,7 +4,8 @@ import constants
 import Visualization
 import numpy as np
 from queue import Queue
-from threading import Thread
+import threading
+from time import time
 def breaking_atmosphere(planet, dh, atmosphere_height):
     n =[]
     coef0 = 4*np.pi*constants.alpha*planet.Po/(constants.k*planet.T)
@@ -61,7 +62,7 @@ def one_step(particle, planet, atmosphere, dt):
             particle.coord[0] += particle.velocity[0]*particle.velocity[2]*dt
             particle.coord[1] += particle.velocity[1]*particle.velocity[2]*dt
             return
-    if r > planet.R + atmosphere.height and particle.velocity[0]>=0 and np.abs(particle.velocity[1])>0.5:
+    if r > (planet.R + atmosphere.height) and particle.velocity[0]!=1:
         particle.coord[0] = 0
         particle.coord[1] = 0
         return
@@ -140,30 +141,64 @@ def one_step(particle, planet, atmosphere, dt):
     # particle.velocity[1] = next_v_y
     # particle.velocity[2] = constants.c/next_n
 
-def movement(planet, atmosphere, particles, N, dt, particle_numbers):
-    x = []
-    y = []
+def one_particle_way(particle, planet, atmosphere, dt, line_x, line_y, N):
+    event = threading.Event()
+    line_x.append(particle.coord[0])
+    line_y.append(particle.coord[1])
+    print("Thread start working")
+    for i in range(N):
+        one_step(particle, planet, atmosphere, dt)
+        if particle.coord[0] == particle.coord[1] ==0:
+            return
+        if i % 100 == 0:
+            line_x.append(particle.coord[0])
+            line_y.append(particle.coord[1])
+    print("Thread end working")
+def movement(planet, atmosphere, particles, N, dt):
+    t1 = time()
     removes =[]
     lines_x = []
     lines_y = []
     for i in range(len(particles)):
         lines_x.append([])
         lines_y.append([])
-    for i in range(N):
-        for j in range(len(particles)):
-            if j not in removes:
-                one_step(particles[j], planet, atmosphere, dt)
-        for k in range(len(particles)):
-            if particles[k].coord[0] == particles[k].coord[1] == 0:
-                if k not in removes:
-                    removes.append(k)
-            else:
-                lines_x[k%particle_numbers].append(particles[k].coord[0])
-                lines_y[k%particle_numbers].append(particles[k].coord[1])
-                y.append(particles[k].coord[1])
-                x.append(particles[k].coord[0])
+
+    threads = [
+        threading.Thread(target=one_particle_way, args=(particles[j], planet, atmosphere, dt, lines_x[j], lines_y[j], N,))
+        for j in range(0, len(particles))
+    ]
+    for thread in threads:
+        thread.start()  # каждый поток должен быть запущен
+    for thread in threads:
+        thread.join()  # дожидаемся исполнения всех потоков
+
+    # for i in range(N):
+    #     for j in range(len(particles)):
+    #
+    #
+    #
+    #         if j not in removes:
+    #
+    #             one_step(particles[j], planet, atmosphere, dt)
+    #     for k in range(len(particles)):
+    #         if particles[k].coord[0] == particles[k].coord[1] == 0:
+    #             if k not in removes:
+    #                 removes.append(k)
+    #         else:
+    #             lines_x[k%particle_numbers].append(particles[k].coord[0])
+    #             lines_y[k%particle_numbers].append(particles[k].coord[1])
+    #             y.append(particles[k].coord[1])
+    #             x.append(particles[k].coord[0])
     #print(len(lines_x[1]))
     #print(lines_x[1][-1])
+    x = []
+    y = []
+    t2 = time()
+    print(t2-t1)
+    for i in range(len(particles)):
+        x+=lines_x[i]
+        y+=lines_y[i]
+
     Visualization.one_frame(planet, x, y, atmosphere)
 
 
