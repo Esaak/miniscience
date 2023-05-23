@@ -1,22 +1,38 @@
 from Solver import *
 
-dt = 1e-7
-dh = 100
-eps = 0.2
-particle_numbers = 5000
-R = 6 * 1e6
-g = 9.8 * 0.84
+# dt = 10**(-9)
+# dh = 1  # м
+# eps = 0.2
+# particle_numbers = 30
+# R = 6 * 1e6
+# g = 9.8 * 0.84
+#
+# Po = 1e7
+# T = 773
+# coef_reflection = 0.3
+# atmosphere_height = R  # м
+#
+# N = 10**5
 
-Po = 1e7
-T = 773
-coef_reflection = 0.3
-atmosphere_height = 100 * 1e3
+dt = constants.dt
+dh = constants.dh  # м
+eps = constants.eps
+particle_numbers = constants.particle_numbers
+R = constants.R
+g = constants.g
 
-x_start = -10 * atmosphere_height
-y_lim = np.array([0.8, 0.9]) * atmosphere_height + R
-dy = (- y_lim[0] + y_lim[1]) / particle_numbers
+Po = constants.Po
+T = constants.T
+coef_reflection = constants.coef_reflection
+atmosphere_height = constants.atmosphere_height  # м
 
-N = 100000000
+
+N = constants.N
+
+x_start = - (atmosphere_height + R) - 1
+
+y_lim = constants.y_lim
+dy = (- y_lim[0] + y_lim[1]) / max(1, particle_numbers - 1)
 
 earth, atmosphere, particles = initialization(particle_numbers=particle_numbers,
                                               R=R,

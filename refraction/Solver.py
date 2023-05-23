@@ -4,7 +4,11 @@ import constants
 import Visualization
 import numpy as np
 import threading
-from time import time
+from time import time, sleep
+import sys
+import matplotlib.pyplot as plt
+import os
+from updateConsole import print_at
 
 
 def breaking_atmosphere(planet, dh, atmosphere_height):
@@ -14,7 +18,8 @@ def breaking_atmosphere(planet, dh, atmosphere_height):
 
     for i in range(int(atmosphere_height / dh) + 1):
         n.append(np.sqrt(1 + coef0 * (np.exp(-coef1 * (dh * i)))))
-
+    print(f"Показатель преломления при h = 0 м, при h = {atmosphere_height} м")
+    print(n[0], n[-1])
     return Planet.Atmosphere(atmosphere_height, n, dh)
 
 
@@ -35,7 +40,7 @@ def initialization(particle_numbers, R, g, Po, T, coef_reflection, atmosphere_he
 
 
 def rotation_matrix(cos_gamma, sign):
-    matrix = np.array([[0, 0], [0, 0]], dtype=np.float)
+    matrix = np.array([[0, 0], [0, 0]], dtype=np.float64)
     sin_gamma = np.sqrt(1 - cos_gamma * cos_gamma)
     matrix[0][0] = cos_gamma
     matrix[0][1] = - sign * sin_gamma
@@ -100,7 +105,7 @@ def one_step(particle, planet, atmosphere, dt):
             next_v_csi_eta = snellius(sinb, np.sign(v_csi_eta[0]), np.sign(v_csi_eta[1]))
 
         next_v_x, next_v_y = np.dot(np.linalg.inv(A),
-                                    np.array((np.float(next_v_csi_eta[0]), np.float(next_v_csi_eta[1]))))
+                                    np.array((np.float64(next_v_csi_eta[0]), np.float64(next_v_csi_eta[1]))))
         particle.velocity[0] = next_v_x
         particle.velocity[1] = next_v_y
         particle.velocity[2] = constants.c / next_n
@@ -109,18 +114,26 @@ def one_step(particle, planet, atmosphere, dt):
     particle.coord[1] = next_y
 
 
-def one_particle_way(particle, planet, atmosphere, dt, line_x, line_y, N):
-    event = threading.Event()
+def one_particle_way(particle, planet, atmosphere, dt, line_x, line_y, N, j):
     line_x.append(particle.coord[0])
     line_y.append(particle.coord[1])
+    persent = N // 4
     for i in range(N):
         one_step(particle, planet, atmosphere, dt)
         if particle.coord[0] == particle.coord[1] == 0:
-            return
-        if i % 100 == 0:
+            break
+        if i % 10000 == 0:
             line_x.append(particle.coord[0])
             line_y.append(particle.coord[1])
-    print("Thread end working")
+        # if i % persent == 0:
+        #     sys.stdout.write(f"{j:5d} Thread: {int(i/N * 100)}%    ")
+        #     sys.stdout.write('\n')
+        #     sys.stdout.flush()
+
+
+
+    sys.stdout.write(f"{j:5d} Thread end working \n")
+    # print_at(0, 0, '')
 
 
 def movement(planet, atmosphere, particles, N, dt):
@@ -131,9 +144,11 @@ def movement(planet, atmosphere, particles, N, dt):
         lines_x.append([])
         lines_y.append([])
 
+
+
     threads = [
         threading.Thread(target=one_particle_way,
-                         args=(particles[j], planet, atmosphere, dt, lines_x[j], lines_y[j], N,))
+                         args=(particles[j], planet, atmosphere, dt, lines_x[j], lines_y[j], N, j))
         for j in range(0, len(particles))
     ]
     for thread in threads:
@@ -141,12 +156,43 @@ def movement(planet, atmosphere, particles, N, dt):
     for thread in threads:
         thread.join()  # дожидаемся исполнения всех потоков
 
-    x = []
-    y = []
+    #print_at(constants.particle_numbers + 1, 0, '')
+
     t2 = time()
     print(t2 - t1)
+    x = []
+    y = []
     for i in range(len(particles)):
         x += lines_x[i]
         y += lines_y[i]
 
-    Visualization.one_frame(planet, x, y, atmosphere)
+    # save data at file
+    try:
+        with open(f"data/data_{t2}.txt", 'w') as f:
+            f.write("Calculation parameters:\n")
+            f.write(f"c = {constants.c}\n")
+            f.write(f"m = {constants.m}\n")
+            f.write(f"alpha = {constants.alpha}\n")
+            f.write(f"k = {constants.k}\n\n")
+
+            f.write(f"dt = {constants.dt}\n")
+            f.write(f"dh = {constants.dh}\n")
+            f.write(f"eps = {constants.eps}\n")
+            f.write(f"particle_numbers = {constants.particle_numbers}\n")
+            f.write(f"R = {constants.R}\n")
+            f.write(f"g = {constants.g}\n")
+            f.write(f"Po = {constants.Po}\n")
+            f.write(f"T = {constants.T}\n")
+            f.write(f"coef_reflection = {constants.coef_reflection}\n")
+            f.write(f"atmosphere_height = {constants.atmosphere_height}\n")
+            f.write(f"Light launch interval = [{constants.y_lim[0]}; {constants.y_lim[1]}] \n")
+            f.write(f"N = {constants.N}\n\n\n")
+
+            f.write("Data:\n")
+            f.write("x,m    y,m\n")
+            for i in range(len(particles)):
+                f.write(f"{lines_x[i][-1]} {lines_y[i][-1]}\n")
+    except:
+        print("Error when writing to a file")
+
+    Visualization.one_frame(planet, x, y, atmosphere, t2)
