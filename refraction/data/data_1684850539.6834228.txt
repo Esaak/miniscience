@@ -1,0 +1,32 @@
+Calculation parameters:
+c = 300000000.0
+m = 8e-28
+alpha = 1.1999999999999999e-28
+k = 1.3799999999999998e-23
+
+dt = 1e-07
+dh = 100
+eps = 0.2
+particle_numbers = 10
+R = 6000000.0
+g = 8.232000000000001
+Po = 10000000.0
+T = 773
+coef_reflection = 0.3
+atmosphere_height = 6000000.0
+Light launch interval = [8790000.0; 9420000.0] 
+N = 10000000
+
+
+Data:
+x,m    y,m
+0 0
+0 0
+0 0
+0 0
+0 0
+0 0
+0 0
+0 0
+0 0
+0 0

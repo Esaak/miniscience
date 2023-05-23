@@ -6,9 +6,8 @@ import numpy as np
 import threading
 from time import time, sleep
 import sys
-import matplotlib.pyplot as plt
-import os
-from updateConsole import print_at
+import pygame
+
 
 
 def breaking_atmosphere(planet, dh, atmosphere_height):
@@ -113,10 +112,13 @@ def one_step(particle, planet, atmosphere, dt):
     particle.coord[0] = next_x
     particle.coord[1] = next_y
 
-
-def one_particle_way(particle, planet, atmosphere, dt, line_x, line_y, N, j):
+def screen_coord(x, y, width, height, x_e, y_e):
+    return (x_e*((x + width)/(width + width)), y_e*(1 - (y + height)/(2 * height)))
+def one_particle_way(particle, planet, atmosphere, dt, line_x, line_y, N, j, screen, width, height, x_e, y_e):
     line_x.append(particle.coord[0])
     line_y.append(particle.coord[1])
+    m = x_e/width
+    pygame.draw.circle(screen, (200, 200, 200), (line_x[0] * m + width // 2, line_y[0] * m + height // 2), 2)
     persent = N // 4
     for i in range(N):
         one_step(particle, planet, atmosphere, dt)
@@ -125,10 +127,13 @@ def one_particle_way(particle, planet, atmosphere, dt, line_x, line_y, N, j):
         if i % 10000 == 0:
             line_x.append(particle.coord[0])
             line_y.append(particle.coord[1])
-        # if i % persent == 0:
-        #     sys.stdout.write(f"{j:5d} Thread: {int(i/N * 100)}%    ")
-        #     sys.stdout.write('\n')
-        #     sys.stdout.flush()
+            (x, y)  = screen_coord(line_x[-1], line_y[-1], width, height, x_e, y_e)
+            pygame.draw.circle(screen, (200, 200, 200), (x,y), 2)
+            pygame.display.update()
+        if i % persent == 0:
+            sys.stdout.write(f"{j:5d} Thread: {int(i/N * 100)}%    ")
+            sys.stdout.write('\n')
+            sys.stdout.flush()
 
 
 
@@ -144,17 +149,42 @@ def movement(planet, atmosphere, particles, N, dt):
         lines_x.append([])
         lines_y.append([])
 
+    pygame.init()
+    background_colour = (0, 0, 0)
+    width = np.abs(particles[0].coord[0])
+    height = width
+    (x_e, y_e) = (500, 500)
+    m = np.abs(x_e/width)
+
+    screen = pygame.display.set_mode((x_e, x_e))
+    pygame.display.set_caption('planet refraction')
+    screen.fill(background_colour)
+    pygame.display.update()
+    x_0, y_0 = x_e // 2, y_e // 2
+    screen.fill((0, 0, 0))
+    pygame.draw.circle(screen, (50, 50, 50), ( x_0 ,  y_0), m*(atmosphere.height + planet.R)/2)
+    pygame.draw.circle(screen, (100, 100, 100), (x_0, y_0), m * planet.R/2)
+    running = True
 
 
-    threads = [
-        threading.Thread(target=one_particle_way,
-                         args=(particles[j], planet, atmosphere, dt, lines_x[j], lines_y[j], N, j))
-        for j in range(0, len(particles))
-    ]
-    for thread in threads:
-        thread.start()  # каждый поток должен быть запущен
-    for thread in threads:
-        thread.join()  # дожидаемся исполнения всех потоков
+    while running:
+
+        # quitting
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+
+
+
+        threads = [
+            threading.Thread(target=one_particle_way,
+                             args=(particles[j], planet, atmosphere, dt, lines_x[j], lines_y[j], N, j, screen, width, height, x_e, y_e))
+            for j in range(0, len(particles))
+        ]
+        for thread in threads:
+            thread.start()  # каждый поток должен быть запущен
+        for thread in threads:
+            thread.join()  # дожидаемся исполнения всех потоков
 
     #print_at(constants.particle_numbers + 1, 0, '')
 

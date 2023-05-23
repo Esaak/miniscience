@@ -19,7 +19,7 @@ T = 773 # K
 coef_reflection = 0.3
 atmosphere_height = R  # м
 y_lim = np.array([0.465, 0.57], dtype=float) * atmosphere_height + R # м
-N = 10**9
+N = 10**8
 
 # def atmosphere_height_find():
 #     delta_n = 0.00001
